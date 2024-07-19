@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  app:
+    image: sqlchat
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - mongodb
+    secrets:
+      - OPENAI_API_KEY
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    secrets:
+      - postgres_password
+
+  mongodb:
+    image: mongo:4.4
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongodb_password
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    secrets:
+      - mongodb_password
+
+secrets:
+  postgres_password:
+    external: true
+  mongodb_password:
+    external: true
+  OPENAI_API_KEY:
+    external: true
+
+volumes:
+  postgres-data:
+  mongo-data:
